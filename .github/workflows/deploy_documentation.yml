@@ -3,65 +3,73 @@ name: Deploy MkDocs Documentation
 on:
   push:
     tags:
-      - 'v*'
-  workflow_dispatch:
+      - 'v*'        # Trigger on version tags like v1.0.0, v1.1.0
+  workflow_dispatch:  # Optional manual trigger
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      # 1️⃣ Checkout repository
+      - name: Checkout Repository
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
+      # 2️⃣ Set up Python
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.11'
 
+      # 3️⃣ Install dependencies
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install mkdocs mkdocs-material
           pip install mkdocstrings[python] griffe
 
+      # 4️⃣ Determine version
       - name: Set DOC_VERSION
         id: version
         run: |
           echo "DOC_VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
           echo "CUSTOM_SITE_DIR=site/$DOC_VERSION" >> $GITHUB_ENV
 
+      # 5️⃣ Build documentation
       - name: Build Documentation
         run: mkdocs build --site-dir $CUSTOM_SITE_DIR
 
+      # 6️⃣ Deploy to gh-pages using PAT
       - name: Deploy Docs to gh-pages
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_PAT: ${{ secrets.GH_PAT }}  # Your personal access token
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
-          # Clone repo (if branch exists) or initialize new gh-pages branch
-          if git ls-remote --exit-code --heads https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }} gh-pages; then
-            git clone --branch gh-pages https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }} gh-pages
+          # Clone gh-pages branch if exists; else init it
+          if git ls-remote --exit-code --heads https://x-access-token:${GH_PAT}@github.com/${{ github.repository }} gh-pages; then
+            git clone --branch gh-pages https://x-access-token:${GH_PAT}@github.com/${{ github.repository }} gh-pages
             cd gh-pages
           else
             mkdir gh-pages
             cd gh-pages
             git init
-            git remote add origin https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git
+            git remote add origin https://x-access-token:${GH_PAT}@github.com/${{ github.repository }}.git
             git checkout -b gh-pages
           fi
 
-          # Copy new docs
+          # Copy versioned docs
           mkdir -p "site/$DOC_VERSION"
           cp -r "../$CUSTOM_SITE_DIR/"* "site/$DOC_VERSION/"
+
+          # Copy latest docs
           mkdir -p site/latest
           cp -r "../$CUSTOM_SITE_DIR/"* site/latest/
 
-          # Commit and push
+          # Commit and push changes
           git add .
           git commit -m "Deploy documentation for $DOC_VERSION" || echo "No changes to commit"
           git push -f origin gh-pages
