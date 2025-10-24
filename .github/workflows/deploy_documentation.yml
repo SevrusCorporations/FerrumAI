@@ -37,15 +37,15 @@ jobs:
       # 5️⃣ Build docs into versioned folder
       - name: Build Documentation
         run: |
-          mkdocs build --site-dir $CUSTOM_SITE_DIR
+          python -m mkdocs build --site-dir $CUSTOM_SITE_DIR
 
       # 6️⃣ Deploy versioned folder to GitHub Pages
       - name: Deploy Versioned Docs
         run: |
-          mkdocs gh-deploy --force --remote-branch gh-pages --site-dir $CUSTOM_SITE_DIR --message "Deploy $DOC_VERSION"
+          python -m mkdocs gh-deploy --force --remote-branch gh-pages --site-dir $CUSTOM_SITE_DIR --message "Deploy $DOC_VERSION"
 
       # 7️⃣ Update latest folder
       - name: Update Latest Docs
         run: |
           cp -r $CUSTOM_SITE_DIR site/latest
-          mkdocs gh-deploy --force --remote-branch gh-pages --site-dir site/latest --message "Update latest docs"
+          python -m mkdocs gh-deploy --force --remote-branch gh-pages --site-dir site/latest --message "Update latest docs"
