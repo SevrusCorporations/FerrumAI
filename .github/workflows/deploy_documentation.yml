@@ -1,0 +1,51 @@
+name: Deploy MkDocs Documentation
+
+on:
+  push:
+    tags:
+      - 'v*'        # triggers on version tags like v1.0.0, v1.1.0
+  workflow_dispatch: # optional manual trigger
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1️⃣ Checkout the repo
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      # 2️⃣ Set up Python
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      # 3️⃣ Install dependencies
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install mkdocs mkdocs-material mkdocstrings ghp-import
+
+      # 4️⃣ Determine version
+      - name: Set DOC_VERSION
+        id: version
+        run: |
+          echo "DOC_VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+          echo "CUSTOM_SITE_DIR=site/$DOC_VERSION" >> $GITHUB_ENV
+
+      # 5️⃣ Build docs into versioned folder
+      - name: Build Documentation
+        run: |
+          mkdocs build --site-dir $CUSTOM_SITE_DIR
+
+      # 6️⃣ Deploy versioned folder to GitHub Pages
+      - name: Deploy Versioned Docs
+        run: |
+          mkdocs gh-deploy --force --remote-branch gh-pages --site-dir $CUSTOM_SITE_DIR --message "Deploy $DOC_VERSION"
+
+      # 7️⃣ Update latest folder
+      - name: Update Latest Docs
+        run: |
+          cp -r $CUSTOM_SITE_DIR site/latest
+          mkdocs gh-deploy --force --remote-branch gh-pages --site-dir site/latest --message "Update latest docs"
