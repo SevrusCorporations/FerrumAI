@@ -47,7 +47,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           python -m mkdocs gh-deploy \
-          --force \
-          --remote-branch gh-pages \
-          --site-dir $CUSTOM_SITE_DIR \
-          --message "Deploy $DOC_VERSION"
+            --force \
+            --remote-branch gh-pages \
+            --site-dir $CUSTOM_SITE_DIR \
+            --message "Deploy $DOC_VERSION" \
+            --remote-name origin
