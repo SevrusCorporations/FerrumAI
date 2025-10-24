@@ -26,29 +26,45 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install mkdocs mkdocs-material
-          pip install mkdocstrings mkdocstrings-python griffe
+          pip install mkdocstrings[python] griffe
           pip install ghp-import
 
-      # 4️⃣ Determine version
+      # 4️⃣ Configure git for pushing to gh-pages
+      - name: Configure git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
+
+      # 5️⃣ Determine version and custom folder
       - name: Set DOC_VERSION
         id: version
         run: |
           echo "DOC_VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
           echo "CUSTOM_SITE_DIR=site/$DOC_VERSION" >> $GITHUB_ENV
 
-      # 5️⃣ Build docs into versioned folder
+      # 6️⃣ Build docs into versioned folder
       - name: Build Documentation
         run: |
           mkdocs build --site-dir $CUSTOM_SITE_DIR
 
-      # 6️⃣ Deploy versioned folder to GitHub Pages
+      # 7️⃣ Deploy versioned folder to GitHub Pages
       - name: Deploy Versioned Docs
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           python -m mkdocs gh-deploy \
             --force \
             --remote-branch gh-pages \
             --site-dir $CUSTOM_SITE_DIR \
             --message "Deploy $DOC_VERSION" \
+            --remote-name origin
+
+      # 8️⃣ Copy versioned folder to 'latest' and deploy
+      - name: Deploy Latest Docs
+        run: |
+          cp -r $CUSTOM_SITE_DIR site/latest
+          python -m mkdocs gh-deploy \
+            --force \
+            --remote-branch gh-pages \
+            --site-dir site/latest \
+            --message "Update latest docs" \
             --remote-name origin
