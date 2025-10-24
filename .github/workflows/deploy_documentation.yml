@@ -25,7 +25,8 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install mkdocs mkdocs-material mkdocstrings griffe
+          pip install mkdocs mkdocs-material
+          pip install mkdocstrings[python] griffe
 
       # 4️⃣ Determine version and set folder
       - name: Set DOC_VERSION
