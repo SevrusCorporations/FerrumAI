@@ -46,22 +46,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          mkdocs gh-deploy \
-            --force \
-            --remote-branch gh-pages \
-            --site-dir $CUSTOM_SITE_DIR \
-            --message "Deploy $DOC_VERSION" \
-            --remote-url https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git
-
-      # 7️⃣ Update latest folder
-      - name: Update Latest Docs
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          cp -r $CUSTOM_SITE_DIR site/latest
           python -m mkdocs gh-deploy \
-            --force \
-            --remote-branch gh-pages \
-            --site-dir site/latest \
-            --message "Update latest docs" \
-            --remote-url https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git
+          --force \
+          --remote-branch gh-pages \
+          --site-dir $CUSTOM_SITE_DIR \
+          --message "Deploy $DOC_VERSION"
