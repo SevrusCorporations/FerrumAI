@@ -39,14 +39,14 @@ jobs:
       # 5️⃣ Build docs into versioned folder
       - name: Build Documentation
         run: |
-          python -m mkdocs build --site-dir $CUSTOM_SITE_DIR
+          mkdocs build --site-dir $CUSTOM_SITE_DIR
 
       # 6️⃣ Deploy versioned folder to GitHub Pages
       - name: Deploy Versioned Docs
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          python -m mkdocs gh-deploy \
+          mkdocs gh-deploy \
             --force \
             --remote-branch gh-pages \
             --site-dir $CUSTOM_SITE_DIR \
