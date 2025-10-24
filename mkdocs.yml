@@ -1,5 +1,5 @@
 site_name: FerrumAI
-site_dir: documentation
+
 theme:
   name: material
   features:
