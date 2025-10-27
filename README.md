@@ -1,0 +1,2 @@
+# FerrumAI
+Step towards simplicity
