@@ -3,4 +3,4 @@ venv/
 *.pyc
 test/
 *.egg-info/
-*.gitignore
+.gitignore
